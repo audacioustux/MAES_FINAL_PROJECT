@@ -4,13 +4,13 @@
 
 Adafruit_MPU6050 mpu;
 
-#define LDR_IN A3
-#define SONAR_ECHO_IN 5
-#define SONAR_TRIG_OUT 4
-#define DISTANCE_SAFE_LED_OUT 2
-#define POTENTIOMETER_SAFE_DISTANCE_THRESHOLD_IN A2
-#define DISTANCE_CRITICAL_LED_OUT 6
-#define DISCO_LED_OUT 7
+constexpr int LDR_IN = A3;
+constexpr int SONAR_ECHO_IN = 5;
+constexpr int SONAR_TRIG_OUT = 4;
+constexpr int DISTANCE_SAFE_LED_OUT = 2;
+constexpr int POTENTIOMETER_SAFE_DISTANCE_THRESHOLD_IN = A2;
+constexpr int DISTANCE_CRITICAL_LED_OUT = 6;
+constexpr int DISCO_LED_OUT = 7;
 
 class Smoother
 {
