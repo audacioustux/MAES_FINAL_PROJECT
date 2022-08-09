@@ -12,6 +12,12 @@ constexpr int POTENTIOMETER_SAFE_DISTANCE_THRESHOLD_IN = A2;
 constexpr int DISTANCE_CRITICAL_LED_OUT = 6;
 constexpr int DISCO_LED_OUT = 7;
 
+constexpr int MOTOR_IN1 = 8;
+constexpr int MOTOR_IN2 = 9;
+constexpr int MOTOR_IN3 = 12;
+constexpr int MOTOR_IN4 = 13;
+constexpr int MOTOR_ENA = 10;
+constexpr int MOTOR_ENB = 11;
 class Smoother
 {
   const static int numReadings = 10;
@@ -54,6 +60,13 @@ void setup()
   pinMode(LDR_IN, INPUT);
   pinMode(POTENTIOMETER_SAFE_DISTANCE_THRESHOLD_IN, INPUT);
 
+  pinMode(MOTOR_IN1, OUTPUT);
+  pinMode(MOTOR_IN2, OUTPUT);
+  pinMode(MOTOR_IN3, OUTPUT);
+  pinMode(MOTOR_IN4, OUTPUT);
+  pinMode(MOTOR_ENA, OUTPUT);
+  pinMode(MOTOR_ENB, OUTPUT);
+
   if (!mpu.begin())
   {
     Serial.println("Failed to find MPU6050 chip");
@@ -73,7 +86,7 @@ void setup()
     potentiometer_safe_distance_threshold_smoother.smoothify(analogRead(POTENTIOMETER_SAFE_DISTANCE_THRESHOLD_IN));
     delay(5);
   }
-  safe_distance_threshold = (255. / 1023.) * potentiometer_safe_distance_threshold_smoother.smoothify(analogRead(POTENTIOMETER_SAFE_DISTANCE_THRESHOLD_IN));
+  safe_distance_threshold = constrain(map(potentiometer_safe_distance_threshold_smoother.smoothify(analogRead(POTENTIOMETER_SAFE_DISTANCE_THRESHOLD_IN)), 0, 1023, 0, 255), 10, 50);
   Serial.println("Safe distance set to: " + String(safe_distance_threshold) + " cm");
 
   delay(1000);
@@ -82,7 +95,7 @@ void setup()
 void loop()
 {
   // LDR
-  float ldr_val = (255. / 1023.) * ldr_smoother.smoothify(analogRead(LDR_IN));
+  float ldr_val = map(ldr_smoother.smoothify(analogRead(LDR_IN)), 0, 1023, 0, 255);
   Serial.print("LDR: " + String(ldr_val));
   if (ldr_val < 80)
   {
@@ -105,20 +118,84 @@ void loop()
   Serial.print("gyro :: ");
   Serial.println("x: " + String(g.gyro.x) + " y: " + String(g.gyro.y) + " z: " + String(g.gyro.z));
 
+  static uint8_t motor_left_speed = 0;
+  static uint8_t motor_right_speed = 0;
+
   while (Serial.available() > 0)
   {
     char inputByte;
     inputByte = Serial.read();
     Serial.println(inputByte);
-    if (inputByte == 'Z')
+    if (inputByte == '-')
     {
-      digitalWrite(13, HIGH);
+      motor_left_speed -= 20;
+      motor_right_speed -= 20;
     }
-    else if (inputByte == 'z')
+    if (inputByte == '+')
     {
-      digitalWrite(13, LOW);
+      motor_left_speed += 20;
+      motor_right_speed += 20;
+    }
+    if (inputByte == 'h')
+    {
+      digitalWrite(MOTOR_IN1, LOW);
+      digitalWrite(MOTOR_IN2, HIGH);
+      digitalWrite(MOTOR_IN3, HIGH);
+      digitalWrite(MOTOR_IN4, LOW);
+    }
+    if (inputByte == 'j')
+    {
+      digitalWrite(MOTOR_IN1, HIGH);
+      digitalWrite(MOTOR_IN2, LOW);
+      digitalWrite(MOTOR_IN3, HIGH);
+      digitalWrite(MOTOR_IN4, LOW);
+    }
+    if (inputByte == 'k')
+    {
+      digitalWrite(MOTOR_IN1, LOW);
+      digitalWrite(MOTOR_IN2, HIGH);
+      digitalWrite(MOTOR_IN3, LOW);
+      digitalWrite(MOTOR_IN4, HIGH);
+    }
+    if (inputByte == 'l')
+    {
+      digitalWrite(MOTOR_IN1, HIGH);
+      digitalWrite(MOTOR_IN2, LOW);
+      digitalWrite(MOTOR_IN3, LOW);
+      digitalWrite(MOTOR_IN4, HIGH);
+    }
+    if (inputByte == 's')
+    {
+      motor_left_speed = 0;
+      motor_right_speed = 0;
+    }
+    if (inputByte == 'r')
+    {
+      motor_left_speed = 235;
+      motor_right_speed = 235;
+    }
+    if (inputByte == 'a')
+    {
+      motor_left_speed -= 10;
+    }
+    if (inputByte == 'b')
+    {
+      motor_right_speed -= 10;
+    }
+    if (inputByte == 'A')
+    {
+      motor_left_speed += 10;
+    }
+    if (inputByte == 'B')
+    {
+      motor_right_speed += 10;
     }
   }
+
+  analogWrite(MOTOR_ENA, motor_left_speed);
+  analogWrite(MOTOR_ENB, motor_right_speed);
+
+  Serial.println("Motor speed: left :: " + String(motor_left_speed) + " right:" + String(motor_right_speed));
 
   // SONAR
   digitalWrite(SONAR_TRIG_OUT, LOW);
