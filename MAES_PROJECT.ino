@@ -18,6 +18,7 @@ constexpr int MOTOR_IN3 = 12;
 constexpr int MOTOR_IN4 = 13;
 constexpr int MOTOR_ENA = 10;
 constexpr int MOTOR_ENB = 11;
+
 class Smoother
 {
   const static int numReadings = 10;
@@ -195,7 +196,7 @@ void loop()
   analogWrite(MOTOR_ENA, motor_left_speed);
   analogWrite(MOTOR_ENB, motor_right_speed);
 
-  Serial.println("Motor speed: left :: " + String(motor_left_speed) + " right:" + String(motor_right_speed));
+  Serial.println("Motor speed :: left: " + String(motor_left_speed) + " right:" + String(motor_right_speed));
 
   // SONAR
   digitalWrite(SONAR_TRIG_OUT, LOW);
